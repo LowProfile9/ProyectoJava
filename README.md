@@ -210,9 +210,10 @@ El sistema utiliza MySQL con las siguientes tablas principales:
 
 ## Autores
 
-- Andres Mendoza
+- Andres Felipe Mendoza Gomez
+- Maria De Los Angeles Contreras
+- Pamela Galvis Alvarez
 
 ## Licencia
 
 Este proyecto es de uso educativo.
-
