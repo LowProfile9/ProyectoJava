@@ -14,12 +14,21 @@ import java.util.List;
 public class VehiculoDAO {
 
     public void agregar(Vehiculo v) {
+        if (v == null) {
+            System.out.println("Error: No se puede agregar un vehiculo nulo");
+            return;
+        }
+
         String sql = "INSERT INTO vehiculo (placa, marca, modelo, anio_fabricacion, capacidad_max_kg, estado_id, conductor_id) "
                    + "VALUES (?, ?, ?, ?, ?, (SELECT id FROM estado_vehiculo WHERE nombre = ?), ?)";
 
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return;
+        }
 
+        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, v.getPlaca());
             ps.setString(2, v.getMarca());
             ps.setString(3, v.getModelo());
@@ -34,18 +43,31 @@ public class VehiculoDAO {
 
             int filas = ps.executeUpdate();
 
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int idGenerado = rs.getInt(1);
-                    System.out.println("Vehiculo insertado con id = " + idGenerado);
+            if (filas > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int idGenerado = rs.getInt(1);
+                        System.out.println("Vehiculo agregado exitosamente con ID: " + idGenerado);
+                    }
                 }
+            } else {
+                System.out.println("Error: No se pudo agregar el vehiculo");
             }
 
-            System.out.println("Vehiculo agregado. Filas afectadas: " + filas);
-
         } catch (SQLException ex) {
-            System.out.println("VehiculoDAO.agregar - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            if (ex.getMessage().contains("Duplicate entry")) {
+                System.out.println("Error: Ya existe un vehiculo con esa placa");
+            } else if (ex.getMessage().contains("foreign key constraint")) {
+                System.out.println("Error: El estado o conductor especificado no existe");
+            } else {
+                System.out.println("Error al agregar vehiculo: " + ex.getMessage());
+            }
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
     }
 
@@ -58,8 +80,13 @@ public class VehiculoDAO {
                    + "LEFT JOIN estado_vehiculo ev ON v.estado_id = ev.id "
                    + "LEFT JOIN conductor c ON v.conductor_id = c.id";
 
-        try (Connection con = ConexionBD.conectar();
-             Statement st = con.createStatement();
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return lista;
+        }
+
+        try (Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
@@ -81,30 +108,62 @@ public class VehiculoDAO {
             }
 
         } catch (SQLException ex) {
-            System.out.println("VehiculoDAO.listar - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            System.out.println("Error al listar vehiculos: " + ex.getMessage());
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
 
         return lista;
     }
 
     public void eliminar(int id) {
+        if (id <= 0) {
+            System.out.println("Error: ID de vehiculo invalido");
+            return;
+        }
+
         String sql = "DELETE FROM vehiculo WHERE id = ?";
 
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return;
+        }
 
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             int filas = ps.executeUpdate();
-            System.out.println("Vehiculo eliminado. Filas afectadas: " + filas);
+            
+            if (filas > 0) {
+                System.out.println("Vehiculo eliminado exitosamente");
+            } else {
+                System.out.println("Error: No se encontro un vehiculo con ese ID");
+            }
 
         } catch (SQLException ex) {
-            System.out.println("VehiculoDAO.eliminar - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            if (ex.getMessage().contains("foreign key constraint")) {
+                System.out.println("Error: No se puede eliminar el vehiculo porque tiene rutas o mantenimientos asociados");
+            } else {
+                System.out.println("Error al eliminar vehiculo: " + ex.getMessage());
+            }
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
     }
 
     public Vehiculo buscarPorId(int id) {
+        if (id <= 0) {
+            return null;
+        }
+
         String sql = "SELECT v.id, v.placa, v.marca, v.modelo, v.anio_fabricacion, v.capacidad_max_kg, "
                    + "ev.nombre as estado, v.conductor_id, c.nombre_completo as conductor_nombre "
                    + "FROM vehiculo v "
@@ -112,9 +171,13 @@ public class VehiculoDAO {
                    + "LEFT JOIN conductor c ON v.conductor_id = c.id "
                    + "WHERE v.id = ?";
 
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return null;
+        }
 
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -137,21 +200,40 @@ public class VehiculoDAO {
             }
 
         } catch (SQLException ex) {
-            System.out.println("VehiculoDAO.buscarPorId - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            System.out.println("Error al buscar vehiculo: " + ex.getMessage());
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
 
         return null;
     }
 
     public void actualizar(Vehiculo v) {
+        if (v == null) {
+            System.out.println("Error: No se puede actualizar un vehiculo nulo");
+            return;
+        }
+
+        if (v.getId() <= 0) {
+            System.out.println("Error: ID de vehiculo invalido");
+            return;
+        }
+
         String sql = "UPDATE vehiculo SET placa = ?, marca = ?, modelo = ?, anio_fabricacion = ?, "
                    + "capacidad_max_kg = ?, estado_id = (SELECT id FROM estado_vehiculo WHERE nombre = ?), "
                    + "conductor_id = ? WHERE id = ?";
 
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return;
+        }
 
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, v.getPlaca());
             ps.setString(2, v.getMarca());
             ps.setString(3, v.getModelo());
@@ -166,11 +248,27 @@ public class VehiculoDAO {
             ps.setInt(8, v.getId());
 
             int filas = ps.executeUpdate();
-            System.out.println("Vehiculo actualizado. Filas afectadas: " + filas);
+            
+            if (filas > 0) {
+                System.out.println("Vehiculo actualizado exitosamente");
+            } else {
+                System.out.println("Error: No se encontro un vehiculo con ese ID");
+            }
 
         } catch (SQLException ex) {
-            System.out.println("VehiculoDAO.actualizar - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            if (ex.getMessage().contains("Duplicate entry")) {
+                System.out.println("Error: Ya existe un vehiculo con esa placa");
+            } else if (ex.getMessage().contains("foreign key constraint")) {
+                System.out.println("Error: El estado o conductor especificado no existe");
+            } else {
+                System.out.println("Error al actualizar vehiculo: " + ex.getMessage());
+            }
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
     }
 }

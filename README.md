@@ -46,9 +46,11 @@ El sistema incluye usuarios de ejemplo para cada rol. La contraseña por defecto
 
 **Usuarios de ejemplo:**
 - `admin` - Administrador del Sistema (ADMINISTRADOR)
-- `operador1` a `operador6` - Operadores de Logística (OPERADOR_LOGISTICA)
+- `operador1` a `operador5` - Operadores de Logística (OPERADOR_LOGISTICA)
 - `conductor1` a `conductor10` - Conductores (CONDUCTOR)
 - `auditor1` a `auditor6` - Auditores (AUDITOR)
+
+**Total:** 22 usuarios (1 administrador, 5 operadores, 10 conductores, 6 auditores)
 
 ## Instalación
 

@@ -14,12 +14,21 @@ import java.util.List;
 public class ClienteDAO {
 
     public void agregar(Cliente c) {
+        if (c == null) {
+            System.out.println("Error: No se puede agregar un cliente nulo");
+            return;
+        }
+
         String sql = "INSERT INTO cliente (num_identificacion, nombre_completo, telefono, email, direccion) "
                    + "VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return;
+        }
 
+        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, c.getNumIdentificacion());
             ps.setString(2, c.getNombreCompleto());
             ps.setString(3, c.getTelefono());
@@ -28,18 +37,29 @@ public class ClienteDAO {
 
             int filas = ps.executeUpdate();
 
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int idGenerado = rs.getInt(1);
-                    System.out.println("Cliente insertado con id = " + idGenerado);
+            if (filas > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int idGenerado = rs.getInt(1);
+                        System.out.println("Cliente agregado exitosamente con ID: " + idGenerado);
+                    }
                 }
+            } else {
+                System.out.println("Error: No se pudo agregar el cliente");
             }
 
-            System.out.println("Cliente agregado. Filas afectadas: " + filas);
-
         } catch (SQLException ex) {
-            System.out.println("ClienteDAO.agregar - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            if (ex.getMessage().contains("Duplicate entry")) {
+                System.out.println("Error: Ya existe un cliente con ese numero de identificacion");
+            } else {
+                System.out.println("Error al agregar cliente: " + ex.getMessage());
+            }
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
     }
 
@@ -48,8 +68,13 @@ public class ClienteDAO {
 
         String sql = "SELECT id, num_identificacion, nombre_completo, telefono, email, direccion FROM cliente";
 
-        try (Connection con = ConexionBD.conectar();
-             Statement st = con.createStatement();
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return lista;
+        }
+
+        try (Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
@@ -65,35 +90,71 @@ public class ClienteDAO {
             }
 
         } catch (SQLException ex) {
-            System.out.println("ClienteDAO.listar - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            System.out.println("Error al listar clientes: " + ex.getMessage());
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
 
         return lista;
     }
 
     public void eliminar(int id) {
+        if (id <= 0) {
+            System.out.println("Error: ID de cliente invalido");
+            return;
+        }
+
         String sql = "DELETE FROM cliente WHERE id = ?";
 
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return;
+        }
 
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             int filas = ps.executeUpdate();
-            System.out.println("Cliente eliminado. Filas afectadas: " + filas);
+            
+            if (filas > 0) {
+                System.out.println("Cliente eliminado exitosamente");
+            } else {
+                System.out.println("Error: No se encontro un cliente con ese ID");
+            }
 
         } catch (SQLException ex) {
-            System.out.println("ClienteDAO.eliminar - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            if (ex.getMessage().contains("foreign key constraint")) {
+                System.out.println("Error: No se puede eliminar el cliente porque tiene paquetes asociados");
+            } else {
+                System.out.println("Error al eliminar cliente: " + ex.getMessage());
+            }
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
     }
 
     public Cliente buscarPorId(int id) {
+        if (id <= 0) {
+            return null;
+        }
+
         String sql = "SELECT id, num_identificacion, nombre_completo, telefono, email, direccion FROM cliente WHERE id = ?";
 
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return null;
+        }
 
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -109,19 +170,38 @@ public class ClienteDAO {
             }
 
         } catch (SQLException ex) {
-            System.out.println("ClienteDAO.buscarPorId - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            System.out.println("Error al buscar cliente: " + ex.getMessage());
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
 
         return null;
     }
 
     public void actualizar(Cliente c) {
+        if (c == null) {
+            System.out.println("Error: No se puede actualizar un cliente nulo");
+            return;
+        }
+
+        if (c.getId() <= 0) {
+            System.out.println("Error: ID de cliente invalido");
+            return;
+        }
+
         String sql = "UPDATE cliente SET num_identificacion = ?, nombre_completo = ?, telefono = ?, email = ?, direccion = ? WHERE id = ?";
 
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return;
+        }
 
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, c.getNumIdentificacion());
             ps.setString(2, c.getNombreCompleto());
             ps.setString(3, c.getTelefono());
@@ -130,11 +210,25 @@ public class ClienteDAO {
             ps.setInt(6, c.getId());
 
             int filas = ps.executeUpdate();
-            System.out.println("Cliente actualizado. Filas afectadas: " + filas);
+            
+            if (filas > 0) {
+                System.out.println("Cliente actualizado exitosamente");
+            } else {
+                System.out.println("Error: No se encontro un cliente con ese ID");
+            }
 
         } catch (SQLException ex) {
-            System.out.println("ClienteDAO.actualizar - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            if (ex.getMessage().contains("Duplicate entry")) {
+                System.out.println("Error: Ya existe un cliente con ese numero de identificacion");
+            } else {
+                System.out.println("Error al actualizar cliente: " + ex.getMessage());
+            }
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
     }
 }

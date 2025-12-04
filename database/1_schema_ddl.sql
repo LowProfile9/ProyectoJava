@@ -42,19 +42,6 @@ CREATE TABLE rol_usuario (
     descripcion VARCHAR(255)
 );
 
--- Tabla de usuarios del sistema
-CREATE TABLE usuario (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    nombre_completo VARCHAR(200) NOT NULL,
-    rol_id INT NOT NULL,
-    conductor_id INT NULL,
-    activo BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (rol_id) REFERENCES rol_usuario(id),
-    FOREIGN KEY (conductor_id) REFERENCES conductor(id)
-);
-
 -- Tabla de clientes
 CREATE TABLE cliente (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -65,7 +52,7 @@ CREATE TABLE cliente (
     direccion VARCHAR(255)
 );
 
--- Tabla de conductores
+-- Tabla de conductores (debe crearse ANTES de usuario porque usuario la referencia)
 CREATE TABLE conductor (
     id INT PRIMARY KEY AUTO_INCREMENT,
     numero_identificacion VARCHAR(50) NOT NULL UNIQUE,
@@ -74,6 +61,19 @@ CREATE TABLE conductor (
     telefono_contacto VARCHAR(20),
     estado_id INT,
     FOREIGN KEY (estado_id) REFERENCES estado_conductor(id)
+);
+
+-- Tabla de usuarios del sistema (debe crearse DESPUÉS de conductor)
+CREATE TABLE usuario (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    nombre_completo VARCHAR(200) NOT NULL,
+    rol_id INT NOT NULL,
+    conductor_id INT NULL,
+    activo BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (rol_id) REFERENCES rol_usuario(id),
+    FOREIGN KEY (conductor_id) REFERENCES conductor(id)
 );
 
 -- Tabla de vehiculos

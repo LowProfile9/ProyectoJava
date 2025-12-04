@@ -177,28 +177,28 @@ INSERT INTO mantenimiento (fecha_programa, fecha_real, descripcion, costo, kilom
 ('2024-03-03', NULL, 'Cambio de filtros programado', NULL, NULL, 2, 1);
 
 -- Usuarios del sistema (20+ registros)
--- Password por defecto: "password123" (hash MD5 para simplicidad, en producción usar bcrypt)
+-- Password por defecto: "password123" (almacenado en texto plano para simplicidad)
 INSERT INTO usuario (username, password, nombre_completo, rol_id, conductor_id, activo) VALUES
-('admin', '482c811da5d5b4bc6d497ffa98491e38', 'Administrador del Sistema', 1, NULL, TRUE),
-('operador1', '482c811da5d5b4bc6d497ffa98491e38', 'Juan Operador', 2, NULL, TRUE),
-('operador2', '482c811da5d5b4bc6d497ffa98491e38', 'Maria Operadora', 2, NULL, TRUE),
-('operador3', '482c811da5d5b4bc6d497ffa98491e38', 'Carlos Operador', 2, NULL, TRUE),
-('operador4', '482c811da5d5b4bc6d497ffa98491e38', 'Ana Operadora', 2, NULL, TRUE),
-('operador5', '482c811da5d5b4bc6d497ffa98491e38', 'Luis Operador', 2, NULL, TRUE),
-('conductor1', '482c811da5d5b4bc6d497ffa98491e38', 'Pedro Martinez', 3, 1, TRUE),
-('conductor2', '482c811da5d5b4bc6d497ffa98491e38', 'Luis Fernandez', 3, 2, TRUE),
-('conductor3', '482c811da5d5b4bc6d497ffa98491e38', 'Carlos Ramirez', 3, 4, TRUE),
-('conductor4', '482c811da5d5b4bc6d497ffa98491e38', 'Jose Gutierrez', 3, 5, TRUE),
-('conductor5', '482c811da5d5b4bc6d497ffa98491e38', 'Miguel Sanchez', 3, 6, TRUE),
-('conductor6', '482c811da5d5b4bc6d497ffa98491e38', 'Roberto Diaz', 3, 7, TRUE),
-('conductor7', '482c811da5d5b4bc6d497ffa98491e38', 'Fernando Lopez', 3, 8, TRUE),
-('conductor8', '482c811da5d5b4bc6d497ffa98491e38', 'Alberto Morales', 3, 9, TRUE),
-('conductor9', '482c811da5d5b4bc6d497ffa98491e38', 'Ricardo Vega', 3, 10, TRUE),
-('conductor10', '482c811da5d5b4bc6d497ffa98491e38', 'Manuel Torres', 3, 11, TRUE),
-('auditor1', '482c811da5d5b4bc6d497ffa98491e38', 'Sofia Auditor', 4, NULL, TRUE),
-('auditor2', '482c811da5d5b4bc6d497ffa98491e38', 'Diego Auditor', 4, NULL, TRUE),
-('auditor3', '482c811da5d5b4bc6d497ffa98491e38', 'Valeria Auditor', 4, NULL, TRUE),
-('auditor4', '482c811da5d5b4bc6d497ffa98491e38', 'Andres Auditor', 4, NULL, TRUE),
-('auditor5', '482c811da5d5b4bc6d497ffa98491e38', 'Gabriela Auditor', 4, NULL, TRUE),
-('auditor6', '482c811da5d5b4bc6d497ffa98491e38', 'Ricardo Auditor', 4, NULL, TRUE);
+('admin', 'password123', 'Administrador del Sistema', 1, NULL, TRUE),
+('operador1', 'password123', 'Juan Operador', 2, NULL, TRUE),
+('operador2', 'password123', 'Maria Operadora', 2, NULL, TRUE),
+('operador3', 'password123', 'Carlos Operador', 2, NULL, TRUE),
+('operador4', 'password123', 'Ana Operadora', 2, NULL, TRUE),
+('operador5', 'password123', 'Luis Operador', 2, NULL, TRUE),
+('conductor1', 'password123', 'Pedro Martinez', 3, 1, TRUE),
+('conductor2', 'password123', 'Luis Fernandez', 3, 2, TRUE),
+('conductor3', 'password123', 'Carlos Ramirez', 3, 4, TRUE),
+('conductor4', 'password123', 'Jose Gutierrez', 3, 5, TRUE),
+('conductor5', 'password123', 'Miguel Sanchez', 3, 6, TRUE),
+('conductor6', 'password123', 'Roberto Diaz', 3, 7, TRUE),
+('conductor7', 'password123', 'Fernando Lopez', 3, 8, TRUE),
+('conductor8', 'password123', 'Alberto Morales', 3, 9, TRUE),
+('conductor9', 'password123', 'Ricardo Vega', 3, 10, TRUE),
+('conductor10', 'password123', 'Manuel Torres', 3, 11, TRUE),
+('auditor1', 'password123', 'Sofia Auditor', 4, NULL, TRUE),
+('auditor2', 'password123', 'Diego Auditor', 4, NULL, TRUE),
+('auditor3', 'password123', 'Valeria Auditor', 4, NULL, TRUE),
+('auditor4', 'password123', 'Andres Auditor', 4, NULL, TRUE),
+('auditor5', 'password123', 'Gabriela Auditor', 4, NULL, TRUE),
+('auditor6', 'password123', 'Ricardo Auditor', 4, NULL, TRUE);
 

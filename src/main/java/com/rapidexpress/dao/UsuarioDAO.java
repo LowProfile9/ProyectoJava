@@ -3,7 +3,6 @@ package com.rapidexpress.dao;
 import com.rapidexpress.model.entity.Usuario;
 import com.rapidexpress.utils.ConexionBD;
 
-import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,9 +20,17 @@ public class UsuarioDAO {
                     "INNER JOIN rol_usuario r ON u.rol_id = r.id " +
                     "WHERE u.username = ? AND u.activo = TRUE";
         
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            
+        if (username == null || username.trim().isEmpty()) {
+            return null;
+        }
+
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return null;
+        }
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, username);
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -43,8 +50,13 @@ public class UsuarioDAO {
             }
             
         } catch (SQLException ex) {
-            System.out.println("UsuarioDAO.buscarPorUsername - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            System.out.println("Error al buscar usuario: " + ex.getMessage());
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
         
         return null;
@@ -95,8 +107,13 @@ public class UsuarioDAO {
                     "INNER JOIN rol_usuario r ON u.rol_id = r.id " +
                     "ORDER BY u.username";
         
-        try (Connection con = ConexionBD.conectar();
-             Statement st = con.createStatement();
+        Connection con = ConexionBD.conectar();
+        if (con == null) {
+            System.out.println("Error: No se pudo conectar a la base de datos");
+            return lista;
+        }
+
+        try (Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             
             while (rs.next()) {
@@ -115,26 +132,18 @@ public class UsuarioDAO {
             }
             
         } catch (SQLException ex) {
-            System.out.println("UsuarioDAO.listar - Error SQL: " + ex.getMessage());
-            ex.printStackTrace();
+            System.out.println("Error al listar usuarios: " + ex.getMessage());
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexion");
+            }
         }
         
         return lista;
     }
     
-    public static String hashPassword(String password) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hashBytes = md.digest(password.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hashBytes) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (Exception ex) {
-            System.out.println("UsuarioDAO.hashPassword - Error: " + ex.getMessage());
-            return password;
-        }
-    }
+    // Método hashPassword eliminado - ahora se comparan contraseñas en texto plano
 }
 

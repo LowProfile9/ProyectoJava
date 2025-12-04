@@ -14,15 +14,27 @@ public class AuthService {
     }
     
     public boolean login(String username, String password) {
-        Usuario usuario = usuarioDAO.buscarPorUsername(username);
-        
-        if (usuario == null) {
+        if (username == null || username.trim().isEmpty()) {
+            System.out.println("Error: El nombre de usuario no puede estar vacio");
             return false;
         }
         
-        String passwordHash = UsuarioDAO.hashPassword(password);
+        if (password == null || password.isEmpty()) {
+            System.out.println("Error: La contrasena no puede estar vacia");
+            return false;
+        }
         
-        if (usuario.getPassword().equals(passwordHash)) {
+        Usuario usuario = usuarioDAO.buscarPorUsername(username.trim());
+        
+        if (usuario == null) {
+            System.out.println("Error: Usuario no encontrado o inactivo");
+            return false;
+        }
+        
+        // Comparar contraseñas directamente (sin encriptación)
+        String passwordAlmacenado = usuario.getPassword();
+        
+        if (passwordAlmacenado != null && passwordAlmacenado.equals(password)) {
             this.usuarioActual = usuario;
             return true;
         }
