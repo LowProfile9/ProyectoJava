@@ -196,6 +196,17 @@ El sistema utiliza MySQL con las siguientes tablas principales:
 - `mantenimiento` - Registro de mantenimientos
 - `auditoria` - Registro de operaciones del sistema
 
+### Diagrama de Entidad-Relación
+
+![Diagrama de Entidad-Relación](database/diagrama_entidad_relacion.png)
+
+El diagrama muestra la estructura completa de la base de datos con todas las entidades, sus atributos y las relaciones entre ellas. Incluye:
+
+- **Entidades principales**: vehiculo, conductor, cliente, paquete, hoja_ruta
+- **Entidades de estado**: estado_vehiculo, estado_conductor, estado_ruta, estado_paquete
+- **Entidades de mantenimiento**: mantenimiento, tipo_mantenimiento
+- **Relaciones**: ruta_paquete (tabla de unión entre rutas y paquetes)
+
 ## Seguridad
 
 - Las contraseñas se almacenan usando hash MD5 (en producción se recomienda usar bcrypt o Argon2)
